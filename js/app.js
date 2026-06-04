@@ -34,9 +34,9 @@ const bannerByStatus = {
 };
 
 const modeDescriptions = {
-  classic: "Classic mode keeps the original pace and solid board edges.",
+  classic: "Classic mode keeps the original pace and a clean open board.",
   hard: "Hard mode increases the tick speed for a tougher run.",
-  maze: "Maze mode adds internal walls you have to route around.",
+  maze: "Maze mode adds scrappy obstacle clusters while keeping your spawn lane clear.",
   infinite: "Infinite mode wraps the snake around screen edges."
 };
 
@@ -212,8 +212,16 @@ soundButton.addEventListener("click", () => {
   toggleSound();
 });
 
-themeButton.addEventListener("click", () => {
+function handleThemeButtonPress(event) {
+  event.preventDefault();
   toggleTheme();
+}
+
+themeButton.addEventListener("pointerdown", handleThemeButtonPress);
+themeButton.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    handleThemeButtonPress(event);
+  }
 });
 
 touchButtons.forEach((button) => {

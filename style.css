@@ -1,46 +1,83 @@
 :root {
-  --bg: #0b0f1a;
-  --panel: #0e1522;
-  --panel-strong: #121c2e;
-  --border: rgba(255, 255, 255, 0.07);
-  --accent: #ffca28;
-  --accent-strong: #ffd75e;
-  --text: #eef3ff;
-  --text-muted: #9caabd;
-  --button-bg: #172033;
-  --button-hover: #22304a;
-  --radius: 14px;
-  --board-bg: #08111f;
-  --board-grid: rgba(255, 255, 255, 0.05);
-  --board-food: #ffca28;
-  --board-snake-head: #4ade80;
-  --board-snake-body: #22c55e;
-  --board-overlay: rgba(2, 6, 23, 0.54);
-  --board-overlay-text: #eef3ff;
-  --surface-glow: rgba(255, 202, 40, 0.16);
-  --page-wash: radial-gradient(circle at top, rgba(255, 202, 40, 0.18), transparent 36%);
+  --bg: #7bd3c9;
+  --panel: rgba(245, 255, 252, 0.62);
+  --panel-strong: rgba(255, 255, 255, 0.72);
+  --border: rgba(14, 95, 104, 0.18);
+  --accent: #ff8f4d;
+  --accent-strong: #ffd15b;
+  --text: #15525a;
+  --text-muted: #417f85;
+  --button-bg: rgba(255, 255, 255, 0.74);
+  --button-hover: rgba(255, 255, 255, 0.92);
+  --radius: 24px;
+  --board-bg: #89e3d8;
+  --board-grid: rgba(255, 255, 255, 0.1);
+  --board-food: #ff3b33;
+  --board-snake-head: #fffdf7;
+  --board-snake-body: #fffaf0;
+  --board-overlay: rgba(86, 175, 172, 0.52);
+  --board-overlay-text: #ffffff;
+  --board-stripe: rgba(255, 255, 255, 0.08);
+  --board-shadow: rgba(36, 138, 136, 0.28);
+  --board-wall-base: #d86558;
+  --board-wall-top: #ffbb7b;
+  --board-wall-line: rgba(121, 61, 49, 0.42);
+  --surface-glow: rgba(255, 143, 77, 0.24);
+  --page-wash: radial-gradient(circle at top, rgba(255, 252, 228, 0.65), transparent 34%);
 }
 
 body[data-theme="day"] {
-  --bg: #e9f3ff;
-  --panel: #fdfefe;
-  --panel-strong: #ffffff;
-  --border: rgba(15, 23, 42, 0.11);
-  --accent: #ff9f1c;
-  --accent-strong: #ffbf69;
-  --text: #163047;
-  --text-muted: #5b7288;
-  --button-bg: #dceaf8;
-  --button-hover: #cfe2f4;
-  --board-bg: #eef8ff;
-  --board-grid: rgba(22, 48, 71, 0.1);
-  --board-food: #ff7a18;
-  --board-snake-head: #0f9d58;
-  --board-snake-body: #34b56f;
-  --board-overlay: rgba(233, 243, 255, 0.76);
-  --board-overlay-text: #163047;
-  --surface-glow: rgba(255, 159, 28, 0.2);
-  --page-wash: radial-gradient(circle at top, rgba(255, 191, 105, 0.44), transparent 40%);
+  --bg: #8ee4d8;
+  --panel: rgba(248, 255, 253, 0.68);
+  --panel-strong: rgba(255, 255, 255, 0.78);
+  --border: rgba(20, 98, 104, 0.16);
+  --accent: #ff8d42;
+  --accent-strong: #ffd86d;
+  --text: #17545c;
+  --text-muted: #447f83;
+  --button-bg: rgba(255, 255, 255, 0.78);
+  --button-hover: rgba(255, 255, 255, 0.95);
+  --board-bg: #99ece0;
+  --board-grid: rgba(255, 255, 255, 0.14);
+  --board-food: #ff4338;
+  --board-snake-head: #fffef8;
+  --board-snake-body: #fffdf6;
+  --board-overlay: rgba(112, 204, 199, 0.58);
+  --board-overlay-text: #ffffff;
+  --board-stripe: rgba(255, 255, 255, 0.1);
+  --board-shadow: rgba(46, 143, 141, 0.24);
+  --board-wall-base: #de7266;
+  --board-wall-top: #ffc882;
+  --board-wall-line: rgba(123, 54, 38, 0.42);
+  --surface-glow: rgba(255, 141, 66, 0.26);
+  --page-wash: radial-gradient(circle at top, rgba(255, 247, 206, 0.8), transparent 36%);
+}
+
+body[data-theme="night"] {
+  --bg: #081823;
+  --panel: rgba(9, 35, 48, 0.78);
+  --panel-strong: rgba(11, 43, 58, 0.88);
+  --border: rgba(141, 220, 230, 0.18);
+  --accent: #ffb15f;
+  --accent-strong: #ffd56b;
+  --text: #edfaff;
+  --text-muted: #98c8d5;
+  --button-bg: rgba(164, 224, 233, 0.12);
+  --button-hover: rgba(164, 224, 233, 0.2);
+  --board-bg: #102d3b;
+  --board-grid: rgba(255, 255, 255, 0.06);
+  --board-food: #ff6b5f;
+  --board-snake-head: #fffefb;
+  --board-snake-body: #f5f2ea;
+  --board-overlay: rgba(5, 18, 27, 0.7);
+  --board-overlay-text: #ffffff;
+  --board-stripe: rgba(130, 194, 206, 0.08);
+  --board-shadow: rgba(4, 11, 18, 0.62);
+  --board-wall-base: #7a3d34;
+  --board-wall-top: #c76e4e;
+  --board-wall-line: rgba(255, 220, 197, 0.16);
+  --surface-glow: rgba(255, 177, 95, 0.18);
+  --page-wash: radial-gradient(circle at top, rgba(32, 87, 112, 0.28), transparent 34%);
 }
 
 * {
@@ -52,7 +89,7 @@ body[data-theme="day"] {
 html,
 body {
   min-height: 100%;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--text);
   overscroll-behavior: none;
@@ -63,7 +100,8 @@ body {
   flex-direction: column;
   position: relative;
   overflow-x: hidden;
-  transition: background-color 420ms ease, color 420ms ease;
+  transition: background-color 420ms ease, color 420ms ease, box-shadow 420ms ease;
+  box-shadow: inset 0 0 160px rgba(255, 255, 255, 0.04);
 }
 
 body::before {
@@ -73,13 +111,26 @@ body::before {
   z-index: -1;
   background:
     var(--page-wash),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 48%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 48%);
   transition: background 520ms ease, opacity 520ms ease;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.24), transparent 0 12%),
+    radial-gradient(circle at 82% 18%, rgba(255, 243, 207, 0.2), transparent 0 10%),
+    radial-gradient(circle at 76% 74%, rgba(255, 255, 255, 0.14), transparent 0 9%);
+  opacity: 0.75;
 }
 
 button {
   border: 0;
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 10px 14px;
   background: var(--button-bg);
   color: var(--text);
@@ -94,7 +145,7 @@ button {
 
 select {
   border: 0;
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 10px 14px;
   background: var(--button-bg);
   color: var(--text);
@@ -113,9 +164,11 @@ button:hover {
 
 button.primary {
   background: var(--accent);
-  color: #111827;
+  color: #fffdf9;
   font-weight: 700;
-  box-shadow: 0 10px 20px var(--surface-glow);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    0 12px 24px var(--surface-glow);
 }
 
 .topbar {
@@ -124,7 +177,7 @@ button.primary {
   justify-content: space-between;
   gap: 18px;
   padding: 18px 22px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   transition: border-color 420ms ease, background-color 420ms ease;
 }
 
@@ -150,11 +203,14 @@ button.primary {
   position: relative;
   width: 108px;
   height: 42px;
+  min-width: 108px;
   padding: 0;
   border-radius: 999px;
   background: transparent;
   box-shadow: none;
   overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .theme-toggle:hover {
@@ -179,12 +235,14 @@ button.primary {
     inset 0 -4px 8px rgba(15, 23, 42, 0.2),
     0 10px 16px rgba(15, 23, 42, 0.14);
   transition: background 360ms ease, box-shadow 360ms ease;
+  pointer-events: none;
 }
 
 .theme-sky {
   position: absolute;
   inset: 0;
   transition: opacity 360ms ease, transform 360ms ease;
+  pointer-events: none;
 }
 
 .theme-track {
@@ -203,6 +261,7 @@ button.primary {
     inset 0 2px 0 rgba(255, 255, 255, 0.35),
     0 4px 10px rgba(201, 148, 10, 0.45);
   transition: transform 360ms ease, background-color 360ms ease, box-shadow 360ms ease;
+  pointer-events: none;
 }
 
 .theme-sky-day {
@@ -243,6 +302,7 @@ body[data-theme="night"] .theme-sky-night {
   background: #eef7ff;
   border-radius: 999px;
   transition: opacity 300ms ease;
+  pointer-events: none;
 }
 
 .cloud-one {
@@ -271,6 +331,7 @@ body[data-theme="night"] .theme-sky-night {
   transform: rotate(45deg);
   opacity: 0.92;
   transition: opacity 300ms ease;
+  pointer-events: none;
 }
 
 .star-one {
@@ -299,6 +360,7 @@ body[data-theme="night"] .theme-sky-night {
   background: rgba(124, 129, 142, 0.9);
   opacity: 0;
   transition: opacity 260ms ease;
+  pointer-events: none;
 }
 
 body[data-theme="night"] .theme-crater {
@@ -349,10 +411,12 @@ body[data-theme="night"] .theme-crater {
 
 .board-panel,
 .panel {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 34px rgba(21, 99, 102, 0.14);
   transition:
     background-color 420ms ease,
     border-color 420ms ease,
@@ -360,10 +424,17 @@ body[data-theme="night"] .theme-crater {
     transform 260ms ease;
 }
 
+body[data-theme="night"] .board-panel,
+body[data-theme="night"] .panel {
+  background:
+    linear-gradient(180deg, rgba(167, 237, 255, 0.08), rgba(5, 25, 35, 0.36));
+  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.32);
+}
+
 .board-panel {
   padding: 18px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.12)),
     linear-gradient(135deg, var(--surface-glow), transparent 45%);
 }
 
@@ -371,7 +442,7 @@ body[data-theme="night"] .theme-crater {
   margin-bottom: 14px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.22);
   color: var(--text);
   transition: background-color 420ms ease, color 420ms ease;
 }
@@ -382,15 +453,24 @@ body[data-theme="night"] .theme-crater {
   aspect-ratio: 1;
   display: block;
   margin: 0 auto;
-  border-radius: 14px;
+  border-radius: 26px;
   background: var(--board-bg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.34);
   transition:
     background-color 420ms ease,
     border-color 420ms ease,
     box-shadow 420ms ease,
     filter 420ms ease;
-  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.22);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.34),
+    0 20px 40px rgba(31, 126, 125, 0.22);
+}
+
+body[data-theme="night"] #gameCanvas {
+  border-color: rgba(163, 230, 242, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 26px 54px rgba(0, 0, 0, 0.42);
 }
 
 .control-strip {
@@ -419,7 +499,7 @@ body[data-theme="night"] .theme-crater {
 }
 
 .stats-panel {
-  background: linear-gradient(180deg, rgba(255, 202, 40, 0.08), rgba(255, 255, 255, 0.01));
+  background: linear-gradient(180deg, rgba(255, 214, 109, 0.18), rgba(255, 255, 255, 0.08));
 }
 
 .stat-row {
@@ -556,6 +636,13 @@ body[data-theme="night"] .theme-crater {
 
   .top-controls button {
     flex: 1;
+  }
+
+  .top-controls .theme-toggle {
+    flex: 0 0 108px;
+    width: 108px;
+    min-width: 108px;
+    align-self: flex-start;
   }
 
   .top-controls select {

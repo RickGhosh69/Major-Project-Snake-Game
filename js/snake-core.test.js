@@ -48,15 +48,16 @@ test("grows and scores when food is eaten", () => {
         { x: 2, y: 10 },
         { x: 1, y: 10 }
       ],
-      food: { x: 4, y: 10 }
+      food: { x: 4, y: 10, type: "normal" },
+      foods: [{ x: 4, y: 10, type: "normal" }]
     }),
     140
   );
 
-  assert.equal(state.score, 10);
+  assert.equal(state.score, 1);
   assert.equal(state.snake.length, 4);
   assert.deepEqual(state.snake[0], { x: 4, y: 10 });
-  assert.notDeepEqual(state.food, { x: 4, y: 10 });
+  assert.notDeepEqual(state.food, { x: 4, y: 10, type: "normal" });
 });
 
 test("colliding with a wall ends the game", () => {
@@ -109,6 +110,29 @@ test("food placement never lands on the snake", () => {
   assert.equal(snake.some((segment) => segment.x === placement.food.x && segment.y === placement.food.y), false);
 });
 
+test("bomb food shrinks the snake and removes score", () => {
+  const state = advanceState(
+    runningState({
+      score: 7,
+      snake: [
+        { x: 6, y: 10 },
+        { x: 5, y: 10 },
+        { x: 4, y: 10 },
+        { x: 3, y: 10 },
+        { x: 2, y: 10 },
+        { x: 1, y: 10 }
+      ],
+      food: { x: 7, y: 10, type: "bomb", spawnedAt: 0, expiresAt: 15000, reinforcementAt: 8000, reinforcementSpawned: false },
+      foods: [{ x: 7, y: 10, type: "bomb", spawnedAt: 0, expiresAt: 15000, reinforcementAt: 8000, reinforcementSpawned: false }]
+    }),
+    140
+  );
+
+  assert.equal(state.score, 4);
+  assert.equal(state.snake.length, 3);
+  assert.deepEqual(state.snake[0], { x: 7, y: 10 });
+});
+
 test("hard mode uses a faster tick interval", () => {
   const state = createInitialState({ mode: "hard", seed: 5 });
 
@@ -116,21 +140,61 @@ test("hard mode uses a faster tick interval", () => {
   assert.equal(state.mode, "hard");
 });
 
+test("maze mode leaves the starting lane open", () => {
+  const state = createInitialState({ mode: "maze", seed: 5 });
+
+  assert.equal(
+    state.walls.some((wall) => wall.x <= 7 && wall.y >= 7 && wall.y <= 13),
+    false
+  );
+});
+
 test("maze mode colliding with an internal wall ends the game", () => {
+  const mazeState = createInitialState({ mode: "maze", seed: 5 });
+  const targetWall = mazeState.walls[0];
   const state = advanceState(
     runningState({
-      ...createInitialState({ mode: "maze", seed: 5 }),
+      ...mazeState,
       status: "running",
       snake: [
-        { x: 6, y: 5 },
-        { x: 5, y: 5 },
-        { x: 4, y: 5 }
+        { x: targetWall.x - 1, y: targetWall.y },
+        { x: targetWall.x - 2, y: targetWall.y },
+        { x: targetWall.x - 3, y: targetWall.y }
       ]
     }),
     MODE_CONFIGS.maze.tickMs
   );
 
   assert.equal(state.status, "gameover");
+});
+
+test("adds more normal foods over time instead of all at once", () => {
+  const state = advanceState(
+    runningState({
+      elapsedMs: 13000
+    }),
+    140
+  );
+
+  assert.equal(state.foods.filter((food) => food.type === "normal").length >= 2, true);
+});
+
+test("bomb expiration leaves normal food on the board", () => {
+  const state = advanceState(
+    runningState({
+      score: 8,
+      elapsedMs: 15100,
+      food: null,
+      foods: [
+        { x: 10, y: 10, type: "bomb", spawnedAt: 0, expiresAt: 15000, reinforcementAt: 8000, reinforcementSpawned: true },
+        { x: 6, y: 6, type: "normal", spawnedAt: 0 }
+      ]
+    }),
+    140
+  );
+
+  assert.equal(state.foods.some((food) => food.type === "bomb"), false);
+  assert.equal(state.foods.some((food) => food.type === "normal"), true);
 });
 
 test("infinite mode wraps across edges", () => {

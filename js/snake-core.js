@@ -1,5 +1,28 @@
 const DEFAULT_GRID_SIZE = 20;
 const DEFAULT_TICK_MS = 140;
+const INITIAL_SNAKE = Object.freeze([
+  { x: 3, y: 10 },
+  { x: 2, y: 10 },
+  { x: 1, y: 10 }
+]);
+const MAZE_SAFE_ZONE = Object.freeze({
+  minX: 0,
+  maxX: 7,
+  minY: 7,
+  maxY: 13
+});
+const BOMB_UNLOCK_SCORE = 5;
+const BOMB_UNLOCK_LENGTH = 8;
+const BOMB_UNLOCK_MS = 20000;
+const BOMB_CHANCE = 0.28;
+const BOMB_LIFETIME_MS = 15000;
+const BOMB_FLICKER_START_MS = 8000;
+const BOMB_REINFORCEMENT_MS = 8000;
+const EXTRA_FOOD_SCHEDULE_MS = [0, 12000, 26000];
+const NORMAL_FOOD_SCORE = 1;
+const BOMB_FOOD_PENALTY = 3;
+const BOMB_TAIL_PENALTY = 3;
+const MIN_SNAKE_LENGTH = 2;
 
 export const MODE_CONFIGS = Object.freeze({
   classic: { label: "Classic", tickMs: DEFAULT_TICK_MS, wrap: false, maze: false },
@@ -41,25 +64,68 @@ function isOppositeDirection(current, next) {
 }
 
 function createMazeWalls(gridSize) {
-  const walls = [];
-  const columnA = Math.max(4, Math.floor(gridSize * 0.35));
-  const columnB = Math.min(gridSize - 5, Math.floor(gridSize * 0.65));
-  const gapTop = 4;
-  const gapMidStart = Math.floor(gridSize * 0.45);
-  const gapMidEnd = gapMidStart + 2;
-  const gapBottom = gridSize - 5;
+  const wallMap = new Map();
+  const clusters = [
+    { x: 5, y: 3, cells: [[0, 0], [1, 0], [1, 1], [2, 1], [2, 2]] },
+    { x: 8, y: 14, cells: [[0, 0], [1, 0], [1, -1], [2, -1], [3, -1], [3, 0]] },
+    { x: 10, y: 6, cells: [[0, 0], [1, 0], [1, 1], [1, 2], [2, 2]] },
+    { x: 13, y: 10, cells: [[0, 0], [1, 0], [1, 1], [2, 1], [2, 2], [3, 2]] },
+    { x: 14, y: 4, cells: [[0, 0], [0, 1], [1, 1], [2, 1], [2, 2]] },
+    { x: 15, y: 15, cells: [[0, 0], [1, 0], [1, -1], [2, -1], [2, -2]] }
+  ];
 
-  for (let y = 2; y < gridSize - 2; y += 1) {
-    if (y !== gapTop && y !== gapMidStart && y !== gapMidEnd) {
-      walls.push({ x: columnA, y });
+  const isInsideSafeZone = (x, y) =>
+    x >= MAZE_SAFE_ZONE.minX &&
+    x <= MAZE_SAFE_ZONE.maxX &&
+    y >= MAZE_SAFE_ZONE.minY &&
+    y <= MAZE_SAFE_ZONE.maxY;
+
+  clusters.forEach((cluster) => {
+    cluster.cells.forEach(([dx, dy]) => {
+      const x = cluster.x + dx;
+      const y = cluster.y + dy;
+
+      if (x < 1 || y < 1 || x >= gridSize - 1 || y >= gridSize - 1 || isInsideSafeZone(x, y)) {
+        return;
+      }
+
+      wallMap.set(`${x}:${y}`, { x, y });
+    });
+  });
+
+  return Array.from(wallMap.values());
+}
+
+function shouldSpawnBomb(stateLike) {
+  return (
+    stateLike.score >= BOMB_UNLOCK_SCORE ||
+    stateLike.snake.length >= BOMB_UNLOCK_LENGTH ||
+    stateLike.elapsedMs >= BOMB_UNLOCK_MS
+  );
+}
+
+function desiredNormalFoodCount(elapsedMs) {
+  let count = 0;
+
+  EXTRA_FOOD_SCHEDULE_MS.forEach((timeMs) => {
+    if (elapsedMs >= timeMs) {
+      count += 1;
     }
+  });
 
-    if (y !== gapMidStart - 1 && y !== gapBottom && y !== gapBottom - 1) {
-      walls.push({ x: columnB, y });
-    }
-  }
+  return Math.min(3, Math.max(1, count));
+}
 
-  return walls;
+function normalizeFood(food, overrides = {}) {
+  return {
+    type: "normal",
+    spawnedAt: 0,
+    expiresAt: null,
+    reinforcementAt: null,
+    reinforcementSpawned: false,
+    ...food,
+    ...overrides
+  };
 }
 
 function getModeConfig(mode) {
@@ -68,13 +134,15 @@ function getModeConfig(mode) {
 
 export function createInitialState({ gridSize = DEFAULT_GRID_SIZE, tickMs = DEFAULT_TICK_MS, seed = 1, mode = "classic" } = {}) {
   const config = getModeConfig(mode);
-  const snake = [
-    { x: 3, y: 10 },
-    { x: 2, y: 10 },
-    { x: 1, y: 10 }
-  ];
+  const snake = INITIAL_SNAKE.map((segment) => ({ ...segment }));
   const walls = config.maze ? createMazeWalls(gridSize) : [];
-  const foodPlacement = placeFood({ snake, walls, gridSize, seed: seed >>> 0 });
+  const foodPlacement = placeFood({
+    snake,
+    walls,
+    gridSize,
+    seed: seed >>> 0,
+    allowBomb: false
+  });
 
   return {
     gridSize,
@@ -89,6 +157,7 @@ export function createInitialState({ gridSize = DEFAULT_GRID_SIZE, tickMs = DEFA
     direction: DIRECTIONS.right,
     nextDirection: DIRECTIONS.right,
     food: foodPlacement.food,
+    foods: foodPlacement.food ? [normalizeFood(foodPlacement.food)] : [],
     elapsedMs: 0,
     accumulatorMs: 0,
     seed: foodPlacement.seed
@@ -132,9 +201,8 @@ export function advanceState(state, deltaMs) {
   return nextState;
 }
 
-export function placeFood({ snake, gridSize, seed }) {
+export function placeFood({ snake, gridSize, seed, walls = [], foods = [], allowBomb = false }) {
   const totalCells = gridSize * gridSize;
-  const walls = arguments[0].walls || [];
   const availableCells = totalCells - walls.length;
 
   if (snake.length >= availableCells) {
@@ -153,16 +221,125 @@ export function placeFood({ snake, gridSize, seed }) {
     candidate = random.cell;
   } while (
     snake.some((segment) => cellsMatch(segment, candidate)) ||
-    walls.some((wall) => cellsMatch(wall, candidate))
+    walls.some((wall) => cellsMatch(wall, candidate)) ||
+    foods.some((food) => cellsMatch(food, candidate))
   );
 
   return {
     seed: currentSeed,
-    food: candidate
+    food: normalizeFood({
+      ...candidate,
+      type: allowBomb && currentSeed % 100 < BOMB_CHANCE * 100 ? "bomb" : "normal"
+    })
+  };
+}
+
+function spawnFood(state, overrides = {}, allowBomb = false) {
+  const placement = placeFood({
+    snake: state.snake,
+    walls: state.walls,
+    foods: state.foods,
+    gridSize: state.gridSize,
+    seed: state.seed,
+    allowBomb
+  });
+
+  return {
+    seed: placement.seed,
+    food: placement.food ? normalizeFood(placement.food, overrides) : null
+  };
+}
+
+function fillNormalFoods(state, foods, count) {
+  let nextFoods = [...foods];
+  let nextSeed = state.seed;
+
+  while (nextFoods.filter((food) => food.type === "normal").length < count) {
+    const placement = placeFood({
+      snake: state.snake,
+      walls: state.walls,
+      foods: nextFoods,
+      gridSize: state.gridSize,
+      seed: nextSeed,
+      allowBomb: false
+    });
+
+    nextSeed = placement.seed;
+
+    if (!placement.food) {
+      break;
+    }
+
+    nextFoods.push(normalizeFood(placement.food, { spawnedAt: state.elapsedMs }));
+  }
+
+  return {
+    foods: nextFoods,
+    seed: nextSeed
+  };
+}
+
+function syncFoods(state) {
+  let nextFoods = (state.foods ?? (state.food ? [state.food] : [])).map((food) => ({ ...normalizeFood(food) }));
+  let nextSeed = state.seed;
+  const desiredNormals = desiredNormalFoodCount(state.elapsedMs);
+  const bomb = nextFoods.find((food) => food.type === "bomb");
+
+  if (bomb) {
+    const bombAge = state.elapsedMs - bomb.spawnedAt;
+    if (!bomb.reinforcementSpawned && bombAge >= bomb.reinforcementAt) {
+      const filled = fillNormalFoods(
+        { ...state, seed: nextSeed },
+        nextFoods,
+        Math.min(3, desiredNormals + 1)
+      );
+      nextFoods = filled.foods.map((food) =>
+        food === bomb ? { ...food, reinforcementSpawned: true } : food
+      );
+      nextSeed = filled.seed;
+      const bombIndex = nextFoods.findIndex((food) => food.type === "bomb");
+      if (bombIndex >= 0) {
+        nextFoods[bombIndex] = { ...nextFoods[bombIndex], reinforcementSpawned: true };
+      }
+    }
+
+    if (bombAge >= bomb.expiresAt) {
+      nextFoods = nextFoods.filter((food) => food !== bomb);
+    }
+  } else if (shouldSpawnBomb(state) && nextFoods.filter((food) => food.type === "normal").length > 0) {
+    const bombPlacement = spawnFood(
+      { ...state, seed: nextSeed },
+      {
+        type: "bomb",
+        spawnedAt: state.elapsedMs,
+        expiresAt: BOMB_LIFETIME_MS,
+        reinforcementAt: BOMB_REINFORCEMENT_MS,
+        reinforcementSpawned: false
+      },
+      true
+    );
+
+    nextSeed = bombPlacement.seed;
+    if (bombPlacement.food?.type === "bomb") {
+      nextFoods.push(bombPlacement.food);
+    }
+  }
+
+  const filled = fillNormalFoods(
+    { ...state, seed: nextSeed },
+    nextFoods,
+    desiredNormals
+  );
+
+  return {
+    ...state,
+    foods: filled.foods,
+    seed: filled.seed
   };
 }
 
 function step(state) {
+  const currentFoods = (state.foods ?? (state.food ? [state.food] : [])).map((food) => normalizeFood(food));
   const direction = state.nextDirection || state.direction;
   const head = state.snake[0];
   const nextHead = {
@@ -199,11 +376,20 @@ function step(state) {
     };
   }
 
-  const foodEaten = state.food && cellsMatch(nextHead, state.food);
+  const eatenFood = currentFoods.find((food) => cellsMatch(nextHead, food));
+  const foodType = eatenFood?.type ?? "normal";
+  const foodEaten = Boolean(eatenFood);
+  const ateBomb = foodEaten && foodType === "bomb";
   const nextSnake = [nextHead, ...state.snake];
 
-  if (!foodEaten) {
+  if (!foodEaten || ateBomb) {
     nextSnake.pop();
+  }
+
+  if (ateBomb) {
+    while (nextSnake.length > MIN_SNAKE_LENGTH && nextSnake.length > state.snake.length - BOMB_TAIL_PENALTY) {
+      nextSnake.pop();
+    }
   }
 
   const collidedWithBody = nextSnake.slice(1).some((segment) => cellsMatch(segment, nextHead));
@@ -221,20 +407,24 @@ function step(state) {
   let nextSeed = state.seed;
   let nextStatus = "running";
   let nextScore = state.score;
+  let nextFoods = currentFoods.filter((food) => food !== eatenFood);
 
   if (foodEaten) {
-    nextScore += 10;
-    const placement = placeFood({
-      snake: nextSnake,
-      walls: state.walls,
-      gridSize: state.gridSize,
-      seed: state.seed
-    });
-    nextFood = placement.food;
-    nextSeed = placement.seed;
-    if (!nextFood) {
-      nextStatus = "won";
-    }
+    nextScore += ateBomb ? -BOMB_FOOD_PENALTY : NORMAL_FOOD_SCORE;
+  }
+
+  const syncedState = syncFoods({
+    ...state,
+    snake: nextSnake,
+    score: nextScore,
+    foods: nextFoods,
+    seed: nextSeed
+  });
+  nextFoods = syncedState.foods;
+  nextSeed = syncedState.seed;
+  nextFood = nextFoods[0] || null;
+  if (nextFoods.length === 0) {
+    nextStatus = "won";
   }
 
   return {
@@ -243,6 +433,7 @@ function step(state) {
     direction,
     nextDirection: direction,
     food: nextFood,
+    foods: nextFoods,
     seed: nextSeed,
     score: nextScore,
     status: nextStatus,
